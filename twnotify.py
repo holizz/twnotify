@@ -36,7 +36,7 @@ class TwNotify:
         del auth # try not to leave passwords in memory for too long
         feed = feedparser.parse(file)
         file.close()
-        for entry in reversed(feed.entries[10:]):
+        for entry in reversed(feed.entries):
             if notify and not self.seen.has_key(entry.id):
                 author, msg = re.match('^(.*?): (.*)$', entry.title).group(1,2)
                 self.notify(author, msg)
