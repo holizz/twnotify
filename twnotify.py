@@ -24,7 +24,7 @@ class TwNotify:
     def __init__(self, icons=True):
         self.seen = {}
         self.icons = icons
-        self.authfile = os.environ['HOME']+'/.twitterauth'
+        self.authfile = os.environ['HOME']+'/.config/twnotify/auth'
         if icons:
             self.icondir = os.environ['HOME']+'/.cache/twnotify'
             if not os.path.isdir(self.icondir):
