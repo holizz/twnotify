@@ -18,7 +18,8 @@
 # Kludge for 2.x
 import sys; reload(sys); sys.setdefaultencoding('utf-8')
 
-import feedparser, urllib, os, re, subprocess, sys, time, yaml
+import urllib, os, re, subprocess, sys, time, yaml
+from xml.etree import ElementTree
 
 class TwNotify:
     def __init__(self, icons=True):
@@ -38,17 +39,21 @@ class TwNotify:
 
     def checkfeed(self, notify=True):
         auth = yaml.load(open(self.authfile))
-        file = urllib.urlopen('https://%s:%s@twitter.com/statuses/friends_timeline.atom' % (auth['Username'], auth['Password']))
+        file = urllib.urlopen('https://%s:%s@twitter.com/statuses/friends_timeline.xml' % (auth['Username'], auth['Password']))
         del auth # try not to leave passwords in memory for too long
-        feed = feedparser.parse(file)
+        statuses = ElementTree.fromstring(file.read())
         file.close()
-        for entry in reversed(feed.entries):
-            if notify and not self.seen.has_key(entry.id):
-                author, msg = re.match('^(.*?): (.*)$', entry.title).group(1,2)
+        del file
+        for status in reversed(statuses):
+            status_id = status.find('id').text
+            if notify and not self.seen.has_key(status_id):
+                author = status.find('user/screen_name').text
+                msg = status.find('text').text
                 icon = None
                 if self.icons:
-                    iconurl = entry.links[1].href
-                    uid, file = re.match('.*/(\d+)/(.+)$', iconurl).group(1,2)
+                    iconurl = status.find('user/profile_image_url').text
+                    uid = status.find('user/id').text
+                    file = re.match('.*/(.+)$', iconurl).group(1)
                     iconuid = self.icondir+'/'+uid
                     iconfile = self.icondir+'/'+uid+'/'+file
                     if not os.path.isfile(iconfile):
@@ -59,8 +64,8 @@ class TwNotify:
                     icon = iconfile
 
                 self.notify(author, msg, icon=icon)
-            self.seen[entry.id] = True
-        del feed # passwords appear here too!
+            self.seen[status_id] = True
+        del statuses
 
     def notify(self, title, body, icon=None):
         sub = ['notify-send', title, body]
