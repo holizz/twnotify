@@ -48,7 +48,7 @@ class TwNotify:
         del file
         for status in reversed(statuses):
             status_id = status.find('id').text
-            if notify and not self.seen.has_key(status_id):
+            if notify and status_id not in self.seen:
                 author = status.find('user/screen_name').text
                 msg = status.find('text').text
                 icon = None
