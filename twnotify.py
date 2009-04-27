@@ -18,14 +18,15 @@
 # Kludge for 2.x
 import sys; reload(sys); sys.setdefaultencoding('utf-8')
 
-import urllib, os, re, subprocess, sys, time, yaml
+import urllib, os, re, subprocess, sys, time
+from ConfigParser import ConfigParser
 from xml.etree import ElementTree
 
 class TwNotify:
     def __init__(self, icons=True):
         self.seen = {}
         self.icons = icons
-        self.authfile = os.environ['HOME']+'/.config/twnotify/auth'
+        self.conffile = os.environ['HOME']+'/.config/twnotify/config'
         if icons:
             self.icondir = os.environ['HOME']+'/.cache/twnotify'
             if not os.path.isdir(self.icondir):
@@ -38,9 +39,10 @@ class TwNotify:
             self.checkfeed()
 
     def checkfeed(self, notify=True):
-        auth = yaml.load(open(self.authfile))
-        file = urllib.urlopen('https://%s:%s@twitter.com/statuses/friends_timeline.xml' % (auth['Username'], auth['Password']))
-        del auth # try not to leave passwords in memory for too long
+        conf = ConfigParser()
+        conf.readfp(open(self.conffile))
+        file = urllib.urlopen('https://%s:%s@twitter.com/statuses/friends_timeline.xml' % (conf.get('Authorisation','username'), conf.get('Authorisation','password')))
+        del conf # try not to leave passwords in memory for too long
         statuses = ElementTree.fromstring(file.read())
         file.close()
         del file
