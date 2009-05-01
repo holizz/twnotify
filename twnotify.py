@@ -41,7 +41,7 @@ class TwNotify:
     def checkfeed(self, notify=True):
         conf = ConfigParser()
         conf.readfp(open(self.conffile))
-        file = urllib.urlopen('https://%s:%s@twitter.com/statuses/friends_timeline.xml' % (conf.get('Authorisation','username'), conf.get('Authorisation','password')))
+        file = urllib.urlopen('https://%s:%s@twitter.com/statuses/friends_timeline.xml' % (conf.get('Authentication','username'), conf.get('Authentication','password')))
         del conf # try not to leave passwords in memory for too long
         statuses = ElementTree.fromstring(file.read())
         file.close()
