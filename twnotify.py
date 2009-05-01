@@ -18,7 +18,7 @@
 # Kludge for 2.x
 import sys; reload(sys); sys.setdefaultencoding('utf-8')
 
-import urllib, os, re, subprocess, sys, time
+import gtk, urllib, os, pynotify, re, sys, time
 from ConfigParser import ConfigParser
 from xml.etree import ElementTree
 
@@ -31,6 +31,7 @@ class TwNotify:
             self.icondir = os.environ['HOME']+'/.cache/twnotify'
             if not os.path.isdir(self.icondir):
                 os.makedirs(self.icondir)
+        pynotify.init('TwNotify')
         self.checkfeed(notify=False)
 
     def run(self, timeout=300):
@@ -70,12 +71,11 @@ class TwNotify:
         del statuses
 
     def notify(self, title, body, icon=None):
-        sub = ['notify-send', title, body]
+        n = pynotify.Notification(title, body)
         if icon:
-            sub.append('-i')
-            sub.append(icon)
-        if subprocess.call(sub) != 0:
-            raise Exception("didn't work")
+            i = gtk.gdk.pixbuf_new_from_file(icon)
+            n.set_icon_from_pixbuf(i)
+        n.show()
 
 if __name__ == '__main__':
     tw = TwNotify()
